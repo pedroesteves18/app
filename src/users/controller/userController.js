@@ -21,6 +21,18 @@ const userController = {
         }catch(err){
             
         }
+    },
+    fetchMe: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const user = await userService.fetchme(userId);
+            if (!user) {
+                return res.status(404).send({ msg: 'User not found.' });
+            }
+            return res.status(200).send({ user:user });
+        } catch (error) {
+            return res.status(500).send({ msg: 'Error fetching user data.', error: error.message });
+        }
     }
 }
 

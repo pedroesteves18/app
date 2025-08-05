@@ -1,4 +1,4 @@
-import userSchema from './userSchema.js';
+import userSchema from '../../../global/sanitize/userSchema.js';
 const validateData = (req, res, next) => {
   const { error } = userSchema.validate(req.body, { abortEarly: false });
 
