@@ -25,7 +25,7 @@ const userService = {
         if (!hashedPassword) return [null, null];
         const compared = await userService.comparePassword(userData.password, hashedPassword);
         if (!compared) return [null, null];
-        let token = userService.createToken(hashedPassword);
+        let token = userService.createToken(user);
         return [user,token]
 
     },
@@ -35,6 +35,12 @@ const userService = {
             role: user.role
         }
         return jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
+    },
+    fetchme(userId) {
+        return User.findOne({
+            where: { id: userId },
+            attributes: { exclude: ['password'] }
+        });
     }
 }
 
