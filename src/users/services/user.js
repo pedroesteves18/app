@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/user.js'
 import bcrypt, { hash } from 'bcryptjs';
-import { Op } from 'sequelize';
+import bucketImageUpload from '../../jobs/bucket.js';
 
 const userService = {
     hashPassword: async (password) => {
@@ -22,9 +22,9 @@ const userService = {
             where: { email: userData.email }
         })
         const hashedPassword = user ? user.password : null;
-        if (!hashedPassword) return [null, null];
+        if (!hashedPassword) throw new Error('Invalid credentials');
         const compared = await userService.comparePassword(userData.password, hashedPassword);
-        if (!compared) return [null, null];
+        if (!compared) throw new Error('Invalid credentials');
         let token = userService.createToken(user);
         return [user,token]
 
@@ -42,7 +42,9 @@ const userService = {
             attributes: { exclude: ['password'] }
         });
     }
+
 }
+
 
 
 export default userService

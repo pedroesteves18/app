@@ -19,6 +19,10 @@ const User = sequelize.define('User', {
   role: {
     type: DataTypes.ENUM('Admin','Contractor', 'Provider'),
     allowNull: false
+  },
+  perfilPhoto: {
+    type: DataTypes.STRING,
+    allowNull: true,
   }
 });
 
