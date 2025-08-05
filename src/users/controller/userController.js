@@ -1,11 +1,21 @@
 
-import User from '../models/user.js';
+import bucketImageUpload from '../../jobs/bucket.js';
 import userService from '../services/user.js';
 const userController = {
     createUser: async (req, res) => {
         try {
-            const user = userService.createUser(req.body)
+            if (!req.file) {
+                return res.status(400).send({ msg: 'No photo uploaded.' });
+            }
+            const userData = {
+                ...req.body,
+                perfilPhoto: await bucketImageUpload(req.file)
+            };
+            let user = await userService.createUser(userData)
+            if (!user) return res.status(400).send({ msg: 'Error creating user.' });
 
+            user = user.toJSON();
+            delete user.password;
             return res.status(201).send({ msg: 'User created sucessfully!', user: user });
         } catch (error) {
             return res.status(500).send({ msg: 'Error creating User', error: error.message });
