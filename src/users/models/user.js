@@ -23,6 +23,10 @@ const User = sequelize.define('User', {
   perfilPhoto: {
     type: DataTypes.STRING,
     allowNull: true,
+  },
+  isEnabled: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
   }
 });
 

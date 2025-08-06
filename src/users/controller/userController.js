@@ -1,5 +1,5 @@
 
-import bucketImageUpload from '../../jobs/bucket.js';
+import bucket from '../../jobs/bucket.js';
 import userService from '../services/user.js';
 const userController = {
     createUser: async (req, res) => {
@@ -7,9 +7,10 @@ const userController = {
             if (!req.file) {
                 return res.status(400).send({ msg: 'No photo uploaded.' });
             }
+            const perfilPhotoURL = await bucket.bucketImageUpload(req.file);
             const userData = {
                 ...req.body,
-                perfilPhoto: await bucketImageUpload(req.file)
+                perfilPhoto: perfilPhotoURL
             };
             let user = await userService.createUser(userData)
             if (!user) return res.status(400).send({ msg: 'Error creating user.' });
