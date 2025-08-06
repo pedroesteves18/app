@@ -27,6 +27,10 @@ const User = sequelize.define('User', {
   isEnabled: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
+  },
+  workingPictures: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
   }
 });
 
