@@ -4,9 +4,10 @@ const s3 = new AWS.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: process.env.AWS_REGION,
+    bucket: process.env.AWS_BUCKET_NAME
 });
 
-const bucketImageUpload = async (file) => {
+const bucketImageUpload = async (file, isBulk = false) => {
     const fileName = `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
 
     const params = {
@@ -21,7 +22,7 @@ const bucketImageUpload = async (file) => {
         if (!data || !data.Location) {
             throw new Error('File uploading to AWS failed');
         }
-        await rekognitionService.runAllRekognitionJobs(data.Key);
+        await rekognitionService.runAllRekognitionJobs(data.Key, isBulk);
         
         return data.Location;
     } catch (error) {

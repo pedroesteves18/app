@@ -5,13 +5,19 @@ import userController from '../controller/userController.js'
 import validateAvailability from './middlewares/validateAvailability.js'
 import verifyAdmToken from '../../global/middleware/verifyAdmToken.js'
 import verifyToken from '../../global/middleware/verifyToken.js'
-import multuer from 'multer'
-const upload = multuer().single('perfilPhoto')
+import multer from 'multer'
+const upload = multer().single('perfilPhoto')
+const BulkUpload = multer().array('workingPictures',5)
 const router = Router()
 
 router.post('/',upload,sanitize, validateData, validateAvailability, userController.createUser),
+router.post('/pictures',BulkUpload,verifyToken, userController.insertPictures)
+
 router.post('/login', sanitize, userController.login)
 router.get('/me', verifyToken, userController.fetchMe)
-
 router.get('/adm', verifyToken,verifyAdmToken, userController.fetchMe)
+
+router.put('/', upload,verifyToken,validateData, validateAvailability, sanitize, userController.updateMe)
+
+
 export default router

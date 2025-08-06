@@ -52,13 +52,14 @@ const rekognitionService = {
             throw new Error(`Error detecting sensitive content: ${error.message}`);
         }
     },
-    runAllRekognitionJobs: async (imageURL) => {        
+    runAllRekognitionJobs: async (imageURL, isBulk = false) => {        
         try {
-            console.log('Running Rekognition jobs on image:', imageURL);
-            const faceResult = await rekognitionService.detectFace(imageURL);
-            if (!faceResult || !faceResult.FaceDetails || faceResult.FaceDetails.length === 0) {
-                await bucket.s3Delete(imageURL);
-                throw new Error('You must upload a photo with your face!');
+            if(isBulk !== 'workingPictures'){
+                const faceResult = await rekognitionService.detectFace(imageURL);   
+                if (!faceResult || !faceResult.FaceDetails || faceResult.FaceDetails.length === 0) {
+                    await bucket.s3Delete(imageURL);
+                    throw new Error('You must upload a photo with your face!');
+                }
             }
 
             const sensitiveResult = await rekognitionService.detectSensitiveContent(imageURL);

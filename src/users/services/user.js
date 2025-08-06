@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/user.js'
 import bcrypt, { hash } from 'bcryptjs';
-import bucketImageUpload from '../../jobs/bucket.js';
+import bucket from '../../jobs/bucket.js';
 
 const userService = {
     hashPassword: async (password) => {
@@ -18,6 +18,7 @@ const userService = {
         return await User.create(userData);
     },
     login: async (userData) => {
+        console.log('test')
         let user = await User.findOne({
             where: { email: userData.email }
         })
@@ -27,7 +28,6 @@ const userService = {
         if (!compared) throw new Error('Invalid credentials');
         let token = userService.createToken(user);
         return [user,token]
-
     },
     createToken: (user) => {
         const payload = {
@@ -41,6 +41,36 @@ const userService = {
             where: { id: userId },
             attributes: { exclude: ['password'] }
         });
+    },
+    updateMe: async (userId, userData) => {
+        const user = await User.findByPk(userId);
+
+        if (userData.password) {
+            userData.password = await userService.hashPassword(userData.password);
+        }
+
+        if (userData.perfilPhoto) {
+            const perfilPhotoURL = await bucket.bucketImageUpload(userData.perfilPhoto);
+            userData.perfilPhoto = perfilPhotoURL;
+        }
+
+        return await user.update(userData);
+    },
+    insertPictures: async (userId, workingPictures) => {
+        const user = await User.findByPk(userId);
+        const uploadedUrls = [];
+        const errors = []
+        for (const picture of workingPictures) {
+            const uploadedUrl = await bucket.bucketImageUpload(picture, 'workingPictures');
+            if(!uploadedUrl){
+                errors.push(picture)
+            } else {
+                uploadedUrls.push(uploadedUrl);
+            }
+        }
+        user.workingPictures = uploadedUrls;
+        await user.save();
+        return { uploadedUrls, errors };
     }
 
 }
