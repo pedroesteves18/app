@@ -10,8 +10,7 @@ const upload = multer().single('perfilPhoto')
 const BulkUpload = multer().array('workingPictures',5)
 const router = Router()
 
-router.post('/',upload,sanitize, validateData, validateAvailability, userController.createUser),
-router.post('/pictures',BulkUpload,verifyToken, userController.insertPictures)
+router.post('/',upload,sanitize, validateData, validateAvailability, userController.createUser)
 
 router.post('/login', sanitize, userController.login)
 router.get('/me', verifyToken, userController.fetchMe)

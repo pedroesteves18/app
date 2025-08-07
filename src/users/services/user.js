@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/user.js'
+import Service from '../../services/models/services.js';
 import bcrypt, { hash } from 'bcryptjs';
 import bucket from '../../jobs/bucket.js';
 
@@ -37,9 +38,13 @@ const userService = {
         return jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
     },
     fetchme(userId) {
-        return User.findOne({
-            where: { id: userId },
-            attributes: { exclude: ['password'] }
+        return User.findByPk(userId, {
+            attributes: { exclude: ['password'] },
+            include: [{
+                model: Service,
+                as: 'Services',
+                attributes: ['id', 'name', 'description', 'workingPictures']
+            }]
         });
     },
     updateMe: async (userId, userData) => {
@@ -55,22 +60,6 @@ const userService = {
         }
 
         return await user.update(userData);
-    },
-    insertPictures: async (userId, workingPictures) => {
-        const user = await User.findByPk(userId);
-        const uploadedUrls = [];
-        const errors = []
-        for (const picture of workingPictures) {
-            const uploadedUrl = await bucket.bucketImageUpload(picture, 'workingPictures');
-            if(!uploadedUrl){
-                errors.push(picture)
-            } else {
-                uploadedUrls.push(uploadedUrl);
-            }
-        }
-        user.workingPictures = uploadedUrls;
-        await user.save();
-        return { uploadedUrls, errors };
     }
 
 }

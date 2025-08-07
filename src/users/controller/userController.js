@@ -22,23 +22,6 @@ const userController = {
             return res.status(500).send({ msg: 'Error creating User', error: error.message });
         }
     },
-    insertPictures: async (req,res) => {
-        try{
-            const user = await userService.fetchme(req.user.id);
-            if (!user) throw new Error('User not found');
-            const workingPictures = req.files
-            if (!workingPictures || workingPictures.length === 0) {
-                return res.status(400).send({ msg: 'No pictures uploaded.' });
-            }
-            const { uploadedUrls, errors } = await userService.insertPictures(user.id, workingPictures);
-            if (errors.length > 0) {
-                return res.status(500).send({ msg: 'Some pictures could not be uploaded.', errors: errors });
-            }
-            return res.status(200).send({ msg: 'Pictures uploaded successfully!', pictures: uploadedUrls });
-        }catch(err){
-            return res.status(500).send({ msg: 'Error uploading pictures.', error: err.message });
-        }
-    },
     login: async (req,res) => {
         console.log('test')
         try{
