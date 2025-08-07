@@ -11,6 +11,6 @@ const router = Router()
 router.post('/',BulkUpload,validateData,verifyToken, serviceController.createService)
 router.put('/',BulkUpload,validateData,verifyToken, serviceController.updateService)
 
-
+router.get('/', verifyToken, serviceController.fetchAllMyServices)
 
 export default router

@@ -5,7 +5,7 @@ const serviceSchema = Joi.object({
 
   name: Joi.string()
     .min(1)
-    .required()
+    .optional()
     .messages({
       'string.base': 'Name must be a string.',
       'string.empty': 'Name cannot be empty.',
@@ -14,13 +14,13 @@ const serviceSchema = Joi.object({
 
   description: Joi.string()
     .min(1)
-    .required()
+    .optional()
     .messages({
       'string.base': 'Description must be a string.',
       'string.empty': 'Description cannot be empty.',
       'any.required': 'Description is required.'
     }),
 
-});
+}).unknown(true); // Allow additional unknown fields
 
 export default serviceSchema;

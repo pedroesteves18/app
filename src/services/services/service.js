@@ -1,6 +1,7 @@
 import bucket from '../../jobs/bucket.js';
 import userService from '../../users/services/user.js';
 import Service from '../models/services.js';
+import sequelize from '../../../config/database.js';
 
 const serviceService= {
     fetchService: async (serviceId) => {
@@ -14,8 +15,6 @@ const serviceService= {
         if (errors.length > 0) {
             return { msg: 'Some pictures could not be uploaded.', errors: errors };
         }
-        console.log(user.id)
-        console.log(userId)
         const service = await Service.create({
             name: data.name,
             description: data.description,
@@ -35,15 +34,13 @@ const serviceService= {
                                                                                     data.deletedPictures
                                                                                 );
             if (errors) return errors
-                                      
-            service.workingPictures = [...service.workingPictures, ...uploadedUrls];
-            console.log('teste')
         }
         service.name = data.name || service.name;
         service.description = data.description || service.description;
         service.isEnabled = data.isEnabled || service.isEnabled;
         await service.save();
-        return { msg: 'Service updated successfully!', service: service };
+        let fetchedService = await serviceService.fetchService(service.id);
+        return { msg: 'Service updated successfully!', service: fetchedService };
     },
     insertPictures: async (workingPictures) => {
         const uploadedUrls = [];
@@ -61,6 +58,7 @@ const serviceService= {
     updatePictures: async (serviceId, workingPictures,deletedPictures) => {
         const service = await serviceService.fetchService(serviceId);
         if(deletedPictures) {
+            console.log(deletedPictures)
             const { remainingPictures } = await serviceService.deletePictures(deletedPictures,serviceId);
             service.workingPictures = remainingPictures;
         }
@@ -77,18 +75,30 @@ const serviceService= {
 
         service.workingPictures = [...service.workingPictures, ...uploadedUrls];
         await service.save();
-        
         return {uploadedUrls, errors: errors.length > 0 ? errors : null};
     },
-    deletePictures: async (pictureUrls,serviceId) => {
+    deletePictures: async (pictureUrls, serviceId) => {
+        let query = sequelize.col('workingPictures');
         for (const url of pictureUrls) {
-            const fileName = url.split('/').pop();
-            await bucket.s3Delete(fileName);
+            query = sequelize.fn('array_remove', query, url);
         }
+
+            await Service.update(
+            { workingPictures: query },
+            { where: { id: serviceId } }
+        );
+
         const remainingPictures = await Service.findByPk(serviceId, {
             attributes: ['workingPictures']
         });
+        console.log(remainingPictures.workingPictures)
         return { remainingPictures: remainingPictures.workingPictures };
+    },
+    fetchAllMyServices: async (userId) => {
+        const services = await Service.findAll({
+            where: { userId: userId },
+        });
+        return services;
     }
 }
 
