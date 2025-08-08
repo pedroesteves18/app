@@ -2,10 +2,20 @@ import Contract from "../models/contract.js";
 import Op from "sequelize";
 import User from "../../users/services/user.js";
 import userService from "../../users/services/user.js";
-
+import { createChannel, createUser } from "../../jobs/sendbird.js";
 const contractService = {
-    startChat: async (chat,contractorId,providerId) => {
-        const contract = await Contract.create({ providerId, contractorId, chat });
+    startChat: async (contractorId,providerId) => {
+        const contract = await Contract.create({ providerId, contractorId });
+        const contractor = await userService.fetchme(contractorId);
+        const provider = await userService.fetchme(providerId);
+        
+
+        await createUser(contractor.id, contractor.username);
+        await createUser(provider.id, provider.username);
+        
+        const channel = await createChannel(contractor.id, provider.id);
+        
+        await contract.update({ chat: channel.url });
         return contract
     },
     getContract: async (contractId) => {
@@ -25,8 +35,7 @@ const contractService = {
             where: {
                 [Op.and]:[
                     { contractorId: contractorId },
-                    {ContractorAccepted: true},
-                    {ContractorDone: false},
+                    { isEnabled: true },
                 ]
             }
         });
@@ -38,9 +47,6 @@ const contractService = {
                 [Op.and]: [
                     { contractorId: contractorId },
                     { providerId: providerId },
-                    { ContractorAccepted: false },
-                    { ContractorDone: false },
-                    { ProviderDone: false }
                 ]
             }
         })
@@ -48,24 +54,26 @@ const contractService = {
     },
     providerAccept: async (providerId, contractId) => {
         const contract = await contractService.getContract(contractId);
-        if (!contract) throw new Error('Contract not found');
-        if(contract.providerAccepted === false) throw new Error('Provider must accept the contract first');
+        if(contract.ContractorAccepted === false) throw new Error('Contractor must accept the contract first');
         return await contract.update({
             providerId: providerId,
-            ProviderAccepted: true
+            ProviderAccepted: true,
+            isEnabled: true
         });
     },
+
+
+
     contractorDone: async (contractId,rating) => {
         const contract = await contractService.getContract(contractId);
-        if (!contract) throw new Error('Contract not found');
         if (contract.ContractorDone) throw new Error('Contractor has already marked the service as done');
         await contract.update({ ContractorDone: true });
         await contractService.rateUser(contract.providerId, rating); 
+        contract.update({ isEnabled: false });
     },
     providerDone: async (contractId,rating) => {
         const contract = await contractService.getContract(contractId);
-        if (!contract) throw new Error('Contract not found');
-        if (contract.ProviderDone) throw new Error('Provider has already marked the service as done');
+        if (contract.ContractorDone) throw new Error('Contractor must mark the service as done first');
         await contract.update({ ProviderDone: true });
         await contractService.rateUser(contract.contractorId, rating);
     },
