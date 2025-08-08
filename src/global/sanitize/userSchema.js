@@ -35,7 +35,38 @@ const userSchema = Joi.object({
     .messages({
       'any.only': 'Role must be one of: admin, user, guest.',
       'any.required': 'Role is required.'
-    })
+    }),
+  perfilPhoto: Joi.string()
+    .uri()
+    .required()
+    .messages({
+      'string.uri': 'Perfil photo must be a valid URL.'
+    }),
+  rating: Joi.number()
+    .min(0)
+    .max(5)
+    .optional()
+    .default(0)
+    .messages({
+      'number.base': 'Rating must be a number.',
+      'number.min': 'Rating must be at least 0.',
+      'number.max': 'Rating must not exceed 5.'
+    }),
+  numberOfRatings: Joi.number()
+    .integer()
+    .min(0)
+    .optional()
+    .default(0)
+    .messages({
+      'number.base': 'Number of ratings must be a number.',
+      'number.integer': 'Number of ratings must be an integer.',
+      'number.min': 'Number of ratings must be at least 0.'
+    }),
+  isEnabled: Joi.boolean()
+    .default(true)
+    .messages({
+      'boolean.base': 'IsEnabled must be a boolean.'
+    }),
 });
 
 export default userSchema;

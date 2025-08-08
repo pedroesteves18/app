@@ -31,6 +31,14 @@ const User = sequelize.define('User', {
   workingPictures: {
     type: DataTypes.ARRAY(DataTypes.STRING),
     allowNull: true,
+  },
+  rating: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+  },
+  numberOfRatings: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   }
 });
 
