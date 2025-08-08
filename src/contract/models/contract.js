@@ -47,6 +47,10 @@ const Contract = sequelize.define('Contract', {
     chat: {
         type: DataTypes.STRING,
         allowNull: true,
+    },
+    isEnabled: {    
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
     }
 });
 
