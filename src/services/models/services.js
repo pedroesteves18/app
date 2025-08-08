@@ -19,7 +19,10 @@ const Service = sequelize.define('Service', {
   workingPictures: {
     type: DataTypes.ARRAY(DataTypes.STRING),
     allowNull: true,
-  }
+  },
+  isDone: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,}
 });
 
 User.hasMany(Service, { foreignKey: 'userId' });
